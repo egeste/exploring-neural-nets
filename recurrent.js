@@ -1,0 +1,1 @@
+import synaptic = from 'synaptic'
