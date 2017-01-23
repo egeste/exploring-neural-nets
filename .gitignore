@@ -4,3 +4,4 @@ npm-debug.log
 /node_modules
 /models/*
 !/models/.gitkeep
+!/models/hello.json
