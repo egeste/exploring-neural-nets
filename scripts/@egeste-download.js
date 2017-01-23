@@ -8,5 +8,5 @@ scrape('from:egeste', (error, tweets) => {
   const outputPath = path.join(__dirname, '..', 'data')
   const outputFile = path.resolve(path.join(outputPath, '@egeste.json'))
 
-  fs.writeFile(outputFile, JSON.stringify(tweets))
+  fs.writeFile(outputFile, JSON.stringify(tweets, null, 2))
 })

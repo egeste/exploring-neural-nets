@@ -19,19 +19,20 @@ export default class Recurrent extends Network {
     const hidden = [] // Iterate to produce these
     for(var i = 0; i < hiddenLayerCount; i++) {
       const hiddenLayer = new Layer(hiddenInputCount)
-      const previousHiddenLayer = hidden[i - 1]
 
+      // Since we're a recurrent network, project to ourselves
+      hiddenLayer.project(hiddenLayer)
+
+      const previousHiddenLayer = hidden[i - 1]
       const isLastLayer = (i >= (hiddenLayerCount - 1))
       const isFirstLayer = !previousHiddenLayer
 
       if (isFirstLayer) input.project(hiddenLayer)
+
+      if (!previousHiddenLayer) input.project(hiddenLayer)
+      else previousHiddenLayer.project(hiddenLayer)
+
       if (isLastLayer) hiddenLayer.project(output)
-
-      if (!isFirstLayer && !isLastLayer)
-        previousHiddenLayer.project(hiddenLayer)
-
-      // Since we're a recurrent network, project to ourselves
-      hiddenLayer.project(hiddenLayer)
 
       hidden.push(hiddenLayer)
     }
