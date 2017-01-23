@@ -36,7 +36,7 @@ const helloTrainer = (function () {
     log: 100,
     error: 0.05,
     shuffle: false,
-    iterations: 2600,
+    iterations: 10000,
     cost: Trainer.cost.MSE
   }
 
