@@ -34,9 +34,9 @@ const trainer = new Trainer(characterNetwork)
 const helloTrainer = (function () {
   const trainingConfig = {
     log: 100,
-    error: 0.1575402487460647,
+    error: 0.05,
     shuffle: false,
-    iterations: Infinity,
+    iterations: 2600,
     cost: Trainer.cost.MSE
   }
 
