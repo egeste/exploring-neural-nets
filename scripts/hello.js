@@ -71,8 +71,9 @@ console.log('Trained', helloTrainer())
 const outputPath = path.join(__dirname, '..', 'models')
 const outputFile = path.resolve(path.join(outputPath, 'hello.json'))
 fs.writeFile(outputFile, JSON.stringify(characterNetwork, null, 2), () => {
-  let previousChar = SOF
   const output = []
+
+  let previousChar = SOF
   do {
     const previousEncodedCharIndex = charspace.indexOf(previousChar)
     const previousEncodedChar = encodedChars[previousEncodedCharIndex]
@@ -90,7 +91,8 @@ fs.writeFile(outputFile, JSON.stringify(characterNetwork, null, 2), () => {
     previousChar = mostProbableNextChar
     output.push(mostProbableNextChar)
 
-    console.log(JSON.stringify(output.join('')))
   } while (previousChar !== EOF)
+
+  console.log(JSON.stringify(output.join('')))
 })
 
