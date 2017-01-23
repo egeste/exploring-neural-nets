@@ -3,16 +3,16 @@ import path from 'path'
 
 import { Trainer, Network } from 'synaptic'
 import RecurrentNetwork from '../src/networks/Recurrent'
-import existingModel from '../models/hello.json'
+// import existingModel from '../models/hello.json'
 
-const SOF = '\x01'
-const EOF = '\x00'
+const SOF = '\x01' // ^
+const EOF = '\x00' // &
 
 // Build a unique list of characters in the data set
 console.log('Building charspace...')
 const charspace = 'helo'.split('')
-charspace.unshift(SOF) // Start
-charspace.push(EOF) // End
+charspace.unshift(SOF)
+charspace.push(EOF)
 
 console.log('Encoding chars...')
 const encodedChars = charspace.map((char, index) => {
@@ -21,25 +21,27 @@ const encodedChars = charspace.map((char, index) => {
   return encodedChar
 })
 
-// const trainingCases = [{
-//   input:  [1, 0, 0, 0, 0, 0],
-//   output: [0, 1, 0, 0, 0, 0]
-// }, {
-//   input:  [0, 1, 0, 0, 0, 0],
-//   output: [0, 0, 1, 0, 0, 0]
-// }, {
-//   input:  [0, 0, 1, 0, 0, 0],
-//   output: [0, 0, 0, 1, 0, 0]
-// }, {
-//   input:  [0, 0, 0, 1, 0, 0],
-//   output: [0, 0, 0, 1, 0, 0]
-// }, {
-//   input:  [0, 0, 0, 1, 0, 0],
-//   output: [0, 0, 0, 0, 1, 0]
-// }, {
-//   input:  [0, 0, 0, 0, 1, 0],
-//   output: [0, 0, 0, 0, 0, 1]
-// }]
+// Am I training this right?
+//        [^, h, e, l, o, &]
+const trainingCases = [{
+  input:  [1, 0, 0, 0, 0, 0],
+  output: [0, 1, 0, 0, 0, 0]
+}, {
+  input:  [0, 1, 0, 0, 0, 0],
+  output: [0, 0, 1, 0, 0, 0]
+}, {
+  input:  [0, 0, 1, 0, 0, 0],
+  output: [0, 0, 0, 1, 0, 0]
+}, {
+  input:  [0, 0, 0, 1, 0, 0],
+  output: [0, 0, 0, 1, 0, 0]
+}, {
+  input:  [0, 0, 0, 1, 0, 0],
+  output: [0, 0, 0, 0, 1, 0]
+}, {
+  input:  [0, 0, 0, 0, 1, 0],
+  output: [0, 0, 0, 0, 0, 1]
+}]
 
 console.log('Creating RecurrentNetwork...')
 // const characterNetwork = Network.fromJSON(existingModel)
@@ -47,42 +49,37 @@ const characterNetwork = new RecurrentNetwork({
   inputCount: charspace.length,
   outputCount: charspace.length,
   hiddenInputCount: charspace.length,
-  hiddenLayerCount: 32
+  hiddenLayerCount: 128
 })
 
-// console.log('Building Trainer...')
-// const trainer = new Trainer(characterNetwork)
+console.log('Building Trainer...')
+const trainer = new Trainer(characterNetwork)
 
-// const speechTrainer = function () {
-//   const trainingConfig = {
-//     log: true,
-//     // rate: .3,
-//     // error: .005,
-//     shuffle: false,
-//     iterations: 999999,
-//     cost: Trainer.cost.MSE
-//     // cost: Trainer.cost.CROSS_ENTROPY
-//   }
-//   return this.train(trainingCases, trainingConfig)
-// }
+const speechTrainer = function () {
+  const trainingConfig = {
+    log: 100,
+    error: 0.15754024739,
+    shuffle: false,
+    iterations: Infinity,
+    cost: Trainer.cost.MSE
+    // rate: .2,
+    // cost: Trainer.cost.CROSS_ENTROPY
+  }
+  return this.train(trainingCases, trainingConfig)
+}
 
-// console.log('Training...')
-// console.log('Trained', speechTrainer.call(trainer))
+console.log('Training...')
+console.log('Trained', speechTrainer.call(trainer))
 
-// const outputPath = path.join(__dirname, '..', 'models')
-// const outputFile = path.resolve(path.join(outputPath, 'hello.json'))
-// fs.writeFile(outputFile, JSON.stringify(characterNetwork, null, 2))
+const outputPath = path.join(__dirname, '..', 'models')
+const outputFile = path.resolve(path.join(outputPath, 'hello.json'))
+fs.writeFile(outputFile, JSON.stringify(characterNetwork, null, 2))
 
-const startingChar = SOF
-const expectedLength = 7
-console.log('Building a', expectedLength, 'char array starting with', startingChar)
-
-const generatedCharacters = (new Array(expectedLength)).fill('')
-generatedCharacters.forEach((char, index) => {
-  let previousChar = generatedCharacters[index - 1]
-  if (previousChar == null) previousChar = startingChar
-
-  const previousEncodedChar = encodedChars[charspace.indexOf(previousChar)]
+let previousChar = SOF
+const output = []
+do {
+  const previousEncodedCharIndex = charspace.indexOf(previousChar)
+  const previousEncodedChar = encodedChars[previousEncodedCharIndex]
 
   const probabilities = characterNetwork.activate(previousEncodedChar)
   const highestProbability = probabilities.reduce((memo, probability) => {
@@ -94,14 +91,8 @@ generatedCharacters.forEach((char, index) => {
   const mostProbableNextCharIndex = encodedChars.indexOf(mostProbableNextEncodedChar)
   const mostProbableNextChar = charspace[mostProbableNextCharIndex]
 
-  // console.log({
-  //   mostProbableNextEncodedCharIndex,
-  //   mostProbableNextEncodedChar,
-  //   mostProbableNextCharIndex,
-  //   mostProbableNextChar
-  // })
+  previousChar = mostProbableNextChar
+  output.push(mostProbableNextChar)
 
-  generatedCharacters[index] = mostProbableNextChar
-})
-
-console.log(generatedCharacters)
+  console.log(output.join(''))
+} while (previousChar !== EOF)
